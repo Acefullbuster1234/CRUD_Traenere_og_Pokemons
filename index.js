@@ -4,8 +4,8 @@ const app = express();
 app.use(express.json());
 
 let trainers = [
-    { id: 1, name: "Alice", region: "Kanto" },
-    { id: 2, name: "Bob", region: "Johto" },
+    { id: 1, name: "Alice",email: "alice@example.com",level: 5, region: "Kanto" },
+    { id: 2, name: "Bob", email: "bob@example.com", level: 3, region: "Johto" },
 ];
 let nextId = 3;
 
@@ -34,7 +34,7 @@ app.put("/trainers/:id", (req, res) => {
     trainer.region = region;
     res.status(200).json({ status: "Trainer updated", trainer });
 })
-app.delete("/delete/trainers/:id", (req, res) => {
+app.delete("/trainers/:id", (req, res) => {
     const trainerIndex = trainers.findIndex(t => t.id === parseInt(req.params.id));
     if (trainerIndex === -1) {
         return res.status(404).json({ error: "Trainer not found" });
@@ -43,13 +43,29 @@ app.delete("/delete/trainers/:id", (req, res) => {
     res.status(200).json({ status: "Trainer deleted" });
 })
 app.post("/register-trainer", (req, res) => {
-    const { name, region} = req.body;
-    if (!name || !region) {
+    const { name,email, level, region} = req.body;
+    if (!name || !region || !email || !level) {
         return res.status(400).json({
             error: "All fields are required"
         });
+    } else if (name.length <= 3) {
+        return res.status(400).json({
+            error: "Name must be more than 3 characters"
+        });
+    } else if (!email.includes("@")) {
+        return res.status(400).json({
+            error: "Email must be valid"
+        });
+    } else if (!Number.isInteger(level)) {
+        return res.status(400).json({
+            error: "Level must be a whole number"
+        });
+    } else if (level < 0 || level > 100) {
+        return res.status(400).json({
+            error: "Level must be between 1 and 100"
+        });
     }
-    trainers.push({ id: nextId++, name, region });
+    trainers.push({ id: nextId++, name, region, email, level });
     res.status(201).json({ status: "Trainer registered", trainer: req.body });
 });
 
